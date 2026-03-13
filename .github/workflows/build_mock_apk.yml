@@ -13,9 +13,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
         run: |
           git init
-          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com//iamCristYE/nogifes-fes.git
-          git pull
-          git checkout origin
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com//iamCristYE/lucky-scan.git
+          git fetch
+          git checkout origin/main
 
       - uses: actions/setup-java@v4
         with:
