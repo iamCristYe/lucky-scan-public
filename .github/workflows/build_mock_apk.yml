@@ -8,7 +8,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Clone repo
+        run: |
+          git init
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com//iamCristYE/nogifes-fes.git
+          git pull
+          git checkout origin
 
       - uses: actions/setup-java@v4
         with:
@@ -32,8 +37,8 @@ jobs:
         run: |
           flutter build apk --debug \
             --dart-define=MOCK_API=true \
-             --build-name="1.0.${{ env.TIMESTAMP }}-mock" \
-             --build-number=${{ env.TIMESTAMP_INT }}
+            --build-name="1.0.${{ env.TIMESTAMP }}-mock" \
+            --build-number=${{ env.TIMESTAMP_INT }}
 
       - name: Prepare artifacts
         run: |

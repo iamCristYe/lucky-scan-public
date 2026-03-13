@@ -12,7 +12,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Clone repo
+        run: |
+          git init
+          git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com//iamCristYE/nogifes-fes.git
+          git pull
+          git checkout origin
 
       - uses: actions/setup-java@v4
         with:
