@@ -1,0 +1,51 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  #push:
+  #  branches: [ "main" ]
+  #pull_request:
+  #  branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Clone Flutter repository with stable channel
+        run: |
+          git clone https://github.com/flutter/flutter.git --depth 1 -b stable $HOME/flutter
+          echo "$HOME/flutter/bin" >> $GITHUB_PATH
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Set timestamp
+        run: |
+          echo "TIMESTAMP=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          echo "TIMESTAMP_INT=$(date +'%s' | cut -c 1-9)" >> $GITHUB_ENV
+
+      - name: Build APK
+        run: |
+          flutter build apk --release \
+            --build-name="1.0.${{ env.TIMESTAMP }}" \
+            --build-number=${{ env.TIMESTAMP_INT }}
+
+      - name: Prepare artifacts
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk luckyscan_${{ env.TIMESTAMP }}.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: luckyscan-release-${{ env.TIMESTAMP }}
+          path: |
+            luckyscan_${{ env.TIMESTAMP }}.apk
+
