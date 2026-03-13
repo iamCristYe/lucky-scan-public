@@ -13,6 +13,8 @@ jobs:
 
     steps:
       - name: Clone repo
+        env:
+          GITHUB_TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
         run: |
           git init
           git remote add origin https://x-access-token:${GITHUB_TOKEN}@github.com//iamCristYE/nogifes-fes.git
