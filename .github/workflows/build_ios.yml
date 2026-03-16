@@ -33,74 +33,31 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
+
       - name: Set timestamp
         run: |
           echo "TIMESTAMP=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          echo "TIMESTAMP_INT=$(date +'%s' | cut -c 1-9)" >> $GITHUB_ENV
 
-      - name: iOS Precache and Generate Xcode Project
+      - name: Precache iOS artifacts
+        run: flutter precache --ios
+
+      # The key step: build unsigned IPA with Flutter
+      - name: Build unsigned IPA
         run: |
-          flutter precache --ios
-          # Generate/refresh the Xcode project settings without attempting a device build
-          flutter build ios --config-only
-
-      # Build/archive with xcodebuild for generic iOS device, fully disabling code signing
-      - name: Archive with xcodebuild (no codesign)
-        run: |
-          set -euo pipefail
-
-          # Ensure CocoaPods are installed in the iOS directory (some projects require this)
+          # Optional: ensure CocoaPods repos are up to date if you use pods
           cd ios
           pod install --repo-update
           cd ..
-
-          ARCHIVE_PATH="$PWD/build/ios/archive/Runner.xcarchive"
-
-          xcodebuild \
-            -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$ARCHIVE_PATH" \
-            clean archive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_IDENTITY="" \
-            DEVELOPMENT_TEAM=""
-
-          echo "Archive created at: $ARCHIVE_PATH"
-
-      # Create a valid unsigned IPA from the archived Runner.app
-      - name: Package unsigned IPA
-        run: |
-          set -euo pipefail
-
-          ARCHIVE_PATH="$PWD/build/ios/archive/Runner.xcarchive"
-          APP_PATH="$ARCHIVE_PATH/Products/Applications/Runner.app"
-          OUT_DIR="$PWD/build/ios/iphoneos"
-          IPA_NAME="Luckyscan_ios_${{ env.TIMESTAMP }}.ipa"
-
-          if [ ! -d "$APP_PATH" ]; then
-            echo "Runner.app not found in archive at $APP_PATH"
-            exit 1
-          fi
-
-          mkdir -p "$OUT_DIR"
-          cd "$OUT_DIR"
-
-          rm -rf Payload
-          mkdir -p Payload
-          cp -R "$APP_PATH" "Payload/Runner.app"
-
-          # Zip as an .ipa (Payload at the root). Use -y to preserve symlinks.
-          /usr/bin/zip -ry9 "$IPA_NAME" Payload
-
-          # Optional cleanup
-          rm -rf Payload
-
-          echo "Created unsigned IPA: $OUT_DIR/$IPA_NAME"
+          # Build unsigned IPA (no code signing)
+          flutter build ipa --release --no-codesign
 
       - name: Upload Artifact (unsigned IPA)
+        uses: actions/upload-artifact@v4
+        with:
+          name: luckyscan-ios-release-${{ env.TIMESTAMP }}
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error
+
         uses: actions/upload-artifact@v4
         with:
           name: luckyscan-ios-release-${{ env.TIMESTAMP }}
