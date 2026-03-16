@@ -44,6 +44,7 @@ jobs:
       # The key step: build unsigned IPA with Flutter
       - name: Build unsigned IPA
         run: |
+          flutter pub get
           # Optional: ensure CocoaPods repos are up to date if you use pods
           cd ios
           pod install --repo-update
