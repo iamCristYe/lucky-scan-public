@@ -50,7 +50,7 @@ jobs:
           mv build/app/outputs/flutter-apk/app-release.apk luckyscan_${{ env.TIMESTAMP }}.apk
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: luckyscan-release-${{ env.TIMESTAMP }}
           path: |
