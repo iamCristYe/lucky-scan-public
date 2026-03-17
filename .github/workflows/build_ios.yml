@@ -52,15 +52,24 @@ jobs:
       - name: Precache iOS artifacts
         run: flutter precache --ios
 
-      # The key step: build unsigned IPA with Flutter
-      - name: Build unsigned IPA
-        run: flutter build ipa --release --no-codesign
+      # Build the iOS app bundle
+      - name: Build iOS app
+        run: flutter build ios --release --no-codesign
+
+      # Manually package the .app into an unsigned .ipa
+      - name: Package unsigned IPA
+        run: |
+          mkdir -p build/ios/iphoneos/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/
+          cd build/ios/iphoneos
+          zip -r luckyscan.ipa Payload
+          cd ../../..
 
       - name: Upload Artifact (unsigned IPA)
         uses: actions/upload-artifact@v4
         with:
           name: luckyscan-ios-release-${{ env.TIMESTAMP }}
-          path: build/ios/ipa/*.ipa
+          path: build/ios/iphoneos/luckyscan.ipa
           if-no-files-found: error
 
 
