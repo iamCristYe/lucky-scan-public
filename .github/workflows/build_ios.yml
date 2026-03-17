@@ -31,7 +31,18 @@ jobs:
         run: flutter doctor -v
 
       - name: Get dependencies
-        run: flutter pub get
+        run: |
+          flutter clean
+          flutter pub get
+
+      - name: Debug Generated.xcconfig
+        run: |
+          if [ -f ios/Flutter/Generated.xcconfig ]; then
+            echo "Generated.xcconfig exists"
+            grep "FLUTTER_ROOT" ios/Flutter/Generated.xcconfig
+          else
+            echo "Generated.xcconfig NOT found"
+          fi
 
 
       - name: Set timestamp
